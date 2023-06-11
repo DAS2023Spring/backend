@@ -79,15 +79,21 @@ class ResetPasswordAPIView(GenericAPIView):
     queryset = User.objects.all()
     lookup_field = 'username'
 
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return SecurityQuestionSerializer
+        else:
+            return ResetPasswordSerializer
+
     def get(self, request, *args, **kwargs):
         user = self.get_object()
         security_question = get_object_or_404(SecurityQuestion, user=user)
-        return Response(SecurityQuestionSerializer(instance=security_question).data)
+        return Response(self.get_serializer(instance=security_question).data)
 
     def post(self, request, *args, **kwargs):
         user: User = self.get_object()
         security_question = get_object_or_404(SecurityQuestion, user=user)
-        serializer = ResetPasswordSerializer(
+        serializer = self.get_serializer(
             data=request.data,
             context={**self.get_serializer_context(), 'security_question': security_question}
         )

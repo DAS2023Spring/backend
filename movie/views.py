@@ -8,7 +8,9 @@ from utility.serializers import ContextDefault
 
 
 class ListMovieAPIView(ListAPIView):
-    class MovieSerializer(serializers.ModelSerializer):
+    class ListMovieSerializer(serializers.ModelSerializer):
+        overall_rating = serializers.IntegerField()
+
         class Meta:
             model = Movie
             fields = [
@@ -21,7 +23,7 @@ class ListMovieAPIView(ListAPIView):
             ]
 
     queryset = Movie.objects.annotate_overall_rating()
-    serializer_class = MovieSerializer
+    serializer_class = ListMovieSerializer
 
 
 class MovieRatingSerializer(serializers.ModelSerializer):
@@ -37,8 +39,9 @@ class MovieRatingSerializer(serializers.ModelSerializer):
 
 
 class RetrieveMovieAPIView(RetrieveAPIView):
-    class MovieSerializer(serializers.ModelSerializer):
+    class RetrieveMovieSerializer(serializers.ModelSerializer):
         ratings = MovieRatingSerializer(source="movierating_set", many=True)
+        overall_rating = serializers.IntegerField()
 
         class Meta:
             model = Movie
@@ -54,7 +57,7 @@ class RetrieveMovieAPIView(RetrieveAPIView):
             ]
 
     queryset = Movie.objects.annotate_overall_rating()
-    serializer_class = MovieSerializer
+    serializer_class = RetrieveMovieSerializer
 
 
 class CreateMovieRatingAPIView(CreateAPIView):
@@ -76,6 +79,8 @@ class CreateMovieRatingAPIView(CreateAPIView):
     queryset = Movie.objects.all()
 
     def get_serializer_context(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return super().get_serializer_context()
         return {
             **super().get_serializer_context(),
             "movie": self.get_object(),
