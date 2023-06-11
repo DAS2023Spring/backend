@@ -3,7 +3,20 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
+class MovieQuerySet(models.QuerySet):
+    def annotate_overall_rating(self):
+        return self.annotate(
+            overall_rating=models.Subquery(
+                MovieRating.objects.filter(movie_id=models.OuterRef("id")).values("movie_id").annotate(
+                    average_rating=models.Avg("rating", output_field=models.FloatField()),
+                ).values("average_rating")[:1],
+                output_field=models.FloatField(),
+            ),
+        )
+
+
 class Movie(models.Model):
+    objects = models.Manager.from_queryset(MovieQuerySet)()
     name = models.CharField(max_length=64)
     director = models.CharField(max_length=128)
     created_year = models.IntegerField()
