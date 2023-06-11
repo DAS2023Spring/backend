@@ -42,6 +42,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             validate_password(password)
         except DjangoValidationError as ve:
             raise ValidationError(get_error_detail(ve))
+        return password
 
     @transaction.atomic
     def create(self, validated_data):
@@ -61,6 +62,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             validate_password(password)
         except DjangoValidationError as ve:
             raise ValidationError(get_error_detail(ve))
+        return password
 
     def validate_answer(self, answer):
         return self.context['security_question'].answer.strip() == answer.strip()
@@ -86,9 +88,10 @@ class ResetPasswordAPIView(GenericAPIView):
         user: User = self.get_object()
         security_question = get_object_or_404(SecurityQuestion, user=user)
         serializer = ResetPasswordSerializer(
-            request.data,
+            data=request.data,
             context={**self.get_serializer_context(), 'security_question': security_question}
         )
         serializer.is_valid(raise_exception=True)
-        user.set_password(serializer.data['answer'])
+        user.set_password(serializer.validated_data['password'])
+        user.save()
         return Response()
