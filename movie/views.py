@@ -14,6 +14,7 @@ class ListMovieAPIView(ListAPIView):
         class Meta:
             model = Movie
             fields = [
+                "id",
                 "name",
                 "director",
                 "created_year",
