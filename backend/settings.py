@@ -148,3 +148,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://cinemashelf.ir",
 ]
+
+MEDIA_ROOT = "media/"
+MEDIA_URL = "api/media/"

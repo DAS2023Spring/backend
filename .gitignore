@@ -91,3 +91,4 @@ db.sqlite3
 .vscode
 /docker-compose.yml
 /staticfiles/
+/media/

@@ -9,6 +9,7 @@ services:
     volumes:
       - /staticfiles:/app/staticfiles
       - ${PWD}/db.sqlite3:/app/db.sqlite3
+      - ./media/:/app/media
     ports:
       - "8000:8000"
     env_file:
