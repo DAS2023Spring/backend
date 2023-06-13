@@ -20,6 +20,7 @@ class ListMovieAPIView(ListAPIView):
                 "length_minutes",
                 "logo",
                 "overall_rating",
+                "imdb_rating",
             ]
 
     queryset = Movie.objects.annotate_overall_rating()
@@ -54,6 +55,9 @@ class RetrieveMovieAPIView(RetrieveAPIView):
                 "logo",
                 "overall_rating",
                 "ratings",
+                "imdb_rating",
+                "header_image",
+                "story",
             ]
 
     queryset = Movie.objects.annotate_overall_rating()

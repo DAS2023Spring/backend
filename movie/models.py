@@ -21,7 +21,10 @@ class Movie(models.Model):
     director = models.CharField(max_length=128)
     created_year = models.IntegerField()
     length_minutes = models.IntegerField()
+    imdb_rating = models.FloatField()
     logo = models.ImageField()
+    header_image = models.ImageField()
+    story = models.TextField()
 
 
 class MovieRating(models.Model):
