@@ -8,26 +8,34 @@ from movie.models import Movie, MovieRating, MovieList
 from utility.serializers import ContextDefault
 
 
-class ListMovieSerializer(serializers.ModelSerializer):
-    overall_rating = serializers.FloatField()
-
-    class Meta:
-        model = Movie
-        fields = [
-            "id",
-            "name",
-            "director",
-            "created_year",
-            "length_minutes",
-            "logo",
-            "overall_rating",
-            "imdb_rating",
-        ]
-
-
 class ListMovieAPIView(ListAPIView):
-    queryset = Movie.objects.annotate_overall_rating()
+    class ListMovieSerializer(serializers.ModelSerializer):
+        overall_rating = serializers.FloatField()
+        is_in_watchlist = serializers.BooleanField()
+
+        class Meta:
+            model = Movie
+            fields = [
+                "id",
+                "name",
+                "director",
+                "created_year",
+                "length_minutes",
+                "logo",
+                "overall_rating",
+                "imdb_rating",
+                "is_in_watchlist",
+            ]
+
     serializer_class = ListMovieSerializer
+
+    def get_queryset(self):
+        queryset = Movie.objects.annotate_overall_rating()
+        if self.request.user.is_authenticated:
+            movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
+        else:
+            movie_list = None
+        return queryset.annotate_is_in_watchlist(movie_list)
 
 
 class MovieRatingSerializer(serializers.ModelSerializer):
@@ -47,6 +55,7 @@ class RetrieveMovieAPIView(RetrieveAPIView):
         ratings = MovieRatingSerializer(source="movierating_set", many=True)
         overall_rating = serializers.FloatField()
         can_rate = serializers.SerializerMethodField()
+        is_in_watchlist = serializers.BooleanField()
 
         class Meta:
             model = Movie
@@ -63,6 +72,7 @@ class RetrieveMovieAPIView(RetrieveAPIView):
                 "header_image",
                 "story",
                 "can_rate",
+                "is_in_watchlist",
             ]
 
         def get_can_rate(self, movie: Movie):
@@ -71,8 +81,15 @@ class RetrieveMovieAPIView(RetrieveAPIView):
                 return False
             return not movie.movierating_set.filter(user=user).exists()
 
-    queryset = Movie.objects.annotate_overall_rating()
     serializer_class = RetrieveMovieSerializer
+
+    def get_queryset(self):
+        queryset = Movie.objects.annotate_overall_rating()
+        if self.request.user.is_authenticated:
+            movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
+        else:
+            movie_list = None
+        return queryset.annotate_is_in_watchlist(movie_list)
 
 
 class CreateMovieRatingAPIView(CreateAPIView):
@@ -103,6 +120,21 @@ class CreateMovieRatingAPIView(CreateAPIView):
 
 
 class RetrieveWatchList(ListAPIView):
+    class ListMovieSerializer(serializers.ModelSerializer):
+        overall_rating = serializers.FloatField()
+
+        class Meta:
+            model = Movie
+            fields = [
+                "id",
+                "name",
+                "director",
+                "created_year",
+                "length_minutes",
+                "logo",
+                "overall_rating",
+                "imdb_rating",
+            ]
 
     permission_classes = [IsAuthenticated]
     serializer_class = ListMovieSerializer

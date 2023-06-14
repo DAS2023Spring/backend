@@ -14,6 +14,15 @@ class MovieQuerySet(models.QuerySet):
             ),
         )
 
+    def annotate_is_in_watchlist(self, watchlist):
+        if watchlist is None:
+            return self.annotate(is_in_watchlist=models.Value(False, models.BooleanField()))
+        return self.annotate(
+            is_in_watchlist=models.Exists(
+                MovieList.movies.through.objects.filter(movie_id=models.OuterRef("id"), movielist_id=watchlist.id),
+            ),
+        )
+
 
 class Movie(models.Model):
     objects = models.Manager.from_queryset(MovieQuerySet)()
