@@ -65,7 +65,9 @@ class ResetPasswordSerializer(serializers.Serializer):
         return password
 
     def validate_answer(self, answer):
-        return self.context['security_question'].answer.strip() == answer.strip()
+        if self.context['security_question'].answer.strip() != answer.strip():
+            raise ValidationError("Wrong answer")
+        return answer
 
     class Meta:
         fields = ['password', 'answer']
