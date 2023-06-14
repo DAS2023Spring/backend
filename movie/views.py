@@ -144,7 +144,7 @@ class RetrieveWatchList(ListAPIView):
         return movie_list.movies.all().annotate_overall_rating()
 
 
-class AddMovieToWatchList(GenericAPIView):
+class AddRemoveMovieToWatchList(GenericAPIView):
     queryset = Movie.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -153,3 +153,9 @@ class AddMovieToWatchList(GenericAPIView):
         movie = self.get_object()
         movie_list.movies.add(movie)
         return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
+        movie = self.get_object()
+        movie_list.movies.remove(movie)
+        return Response(status=status.HTTP_204_NO_CONTENT)
