@@ -9,7 +9,7 @@ from utility.serializers import ContextDefault
 
 class ListMovieAPIView(ListAPIView):
     class ListMovieSerializer(serializers.ModelSerializer):
-        overall_rating = serializers.IntegerField()
+        overall_rating = serializers.FloatField()
 
         class Meta:
             model = Movie
@@ -43,7 +43,7 @@ class MovieRatingSerializer(serializers.ModelSerializer):
 class RetrieveMovieAPIView(RetrieveAPIView):
     class RetrieveMovieSerializer(serializers.ModelSerializer):
         ratings = MovieRatingSerializer(source="movierating_set", many=True)
-        overall_rating = serializers.IntegerField()
+        overall_rating = serializers.FloatField()
         can_rate = serializers.SerializerMethodField()
 
         class Meta:
