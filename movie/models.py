@@ -32,6 +32,7 @@ class MovieRating(models.Model):
     movie = models.ForeignKey(to="movie.Movie", on_delete=models.CASCADE)
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = [("user", "movie")]
