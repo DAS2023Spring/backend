@@ -66,7 +66,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate_answer(self, answer):
         if self.context['security_question'].answer.strip() != answer.strip():
-            raise ValidationError("Wrong answer")
+            raise ValidationError("پاسخ داده‌شده با پاسخ زمان ثبت‌نام مطابقت ندارد.")
         return answer
 
     class Meta:
