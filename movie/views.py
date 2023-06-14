@@ -120,7 +120,7 @@ class CreateMovieRatingAPIView(CreateAPIView):
 
 
 class RetrieveWatchList(ListAPIView):
-    class ListMovieSerializer(serializers.ModelSerializer):
+    class WatchlistMovieSerializer(serializers.ModelSerializer):
         overall_rating = serializers.FloatField()
 
         class Meta:
@@ -137,7 +137,7 @@ class RetrieveWatchList(ListAPIView):
             ]
 
     permission_classes = [IsAuthenticated]
-    serializer_class = ListMovieSerializer
+    serializer_class = WatchlistMovieSerializer
 
     def get_queryset(self):
         movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
