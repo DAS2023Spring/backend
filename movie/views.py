@@ -1,29 +1,31 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.fields import CurrentUserDefault
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from movie.models import Movie, MovieRating
+from movie.models import Movie, MovieRating, MovieList
 from utility.serializers import ContextDefault
 
 
+class ListMovieSerializer(serializers.ModelSerializer):
+    overall_rating = serializers.FloatField()
+
+    class Meta:
+        model = Movie
+        fields = [
+            "id",
+            "name",
+            "director",
+            "created_year",
+            "length_minutes",
+            "logo",
+            "overall_rating",
+            "imdb_rating",
+        ]
+
+
 class ListMovieAPIView(ListAPIView):
-    class ListMovieSerializer(serializers.ModelSerializer):
-        overall_rating = serializers.FloatField()
-
-        class Meta:
-            model = Movie
-            fields = [
-                "id",
-                "name",
-                "director",
-                "created_year",
-                "length_minutes",
-                "logo",
-                "overall_rating",
-                "imdb_rating",
-            ]
-
     queryset = Movie.objects.annotate_overall_rating()
     serializer_class = ListMovieSerializer
 
@@ -98,3 +100,24 @@ class CreateMovieRatingAPIView(CreateAPIView):
             **super().get_serializer_context(),
             "movie": self.get_object(),
         }
+
+
+class RetrieveWatchList(ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = ListMovieSerializer
+
+    def get_queryset(self):
+        movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
+        return movie_list.movies.all().annotate_overall_rating()
+
+
+class AddMovieToWatchList(GenericAPIView):
+    queryset = Movie.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        movie_list, _ = MovieList.objects.get_or_create(user=self.request.user, name=MovieList.WATCH_LIST_NAME)
+        movie = self.get_object()
+        movie_list.movies.add(movie)
+        return Response(status=status.HTTP_201_CREATED)

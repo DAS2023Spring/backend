@@ -40,6 +40,15 @@ class MovieRating(models.Model):
 
 
 class MovieList(models.Model):
+    WATCH_LIST_NAME = "watch-list"
+
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     movies = models.ManyToManyField(to="movie.Movie")
+
+    @classmethod
+    def get_watchlist(cls, user):
+        return cls.objects.get_or_create(user=user)
+
+    class Meta:
+        unique_together = [("user", "name")]
