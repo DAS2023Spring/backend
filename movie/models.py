@@ -35,6 +35,9 @@ class Movie(models.Model):
     header_image = models.ImageField()
     story = models.TextField()
 
+    def __str__(self):
+        return f"{self.name} ({self.created_year})"
+
 
 class MovieRating(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -42,6 +45,9 @@ class MovieRating(models.Model):
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} | {self.movie}"
 
     class Meta:
         unique_together = [("user", "movie")]
