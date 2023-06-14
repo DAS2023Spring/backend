@@ -36,6 +36,7 @@ class MovieRating(models.Model):
 
     class Meta:
         unique_together = [("user", "movie")]
+        ordering = ["-id"]
 
 
 class MovieList(models.Model):
