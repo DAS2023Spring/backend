@@ -44,6 +44,7 @@ class RetrieveMovieAPIView(RetrieveAPIView):
     class RetrieveMovieSerializer(serializers.ModelSerializer):
         ratings = MovieRatingSerializer(source="movierating_set", many=True)
         overall_rating = serializers.IntegerField()
+        can_rate = serializers.SerializerMethodField()
 
         class Meta:
             model = Movie
@@ -59,7 +60,14 @@ class RetrieveMovieAPIView(RetrieveAPIView):
                 "imdb_rating",
                 "header_image",
                 "story",
+                "can_rate",
             ]
+
+        def get_can_rate(self, movie: Movie):
+            user = self.context["request"].user
+            if not user.is_authenticated:
+                return False
+            return not movie.movierating_set.filter(user=user).exists()
 
     queryset = Movie.objects.annotate_overall_rating()
     serializer_class = RetrieveMovieSerializer
